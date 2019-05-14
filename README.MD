@@ -3,7 +3,7 @@
 A REST API to be used as a backend for an appointment management app in a doctor's office.
 
 
-# Database
+## Database
 
 MYSQL is the database of choice. In order to test the project, please **create a database** called **db_rest** and make sure the user "springuser" has **correct permissions** on it.
 
