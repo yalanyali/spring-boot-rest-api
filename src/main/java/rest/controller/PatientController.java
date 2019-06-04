@@ -6,21 +6,37 @@ import org.springframework.web.bind.annotation.*;
 
 import rest.exception.NotFoundException;
 import rest.model.*;
+import rest.repository.AppointmentRepository;
 import rest.repository.DiseaseRepository;
 import rest.repository.MedicineRepository;
 import rest.repository.PatientRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+
+class AppointmentConflict {
+    public boolean isConflicting = false;
+    public Patient conflictingPatient;
+
+    public String toString() {
+        return String.format("{ \"error\": \"CONFLICT\", \"patient\": \"%s %s\"}", conflictingPatient.getFirstName(), conflictingPatient.getLastName());
+    }
+}
 
 @Controller
 @RequestMapping(path="/api/patient")
 public class PatientController {
     @Autowired
     private PatientRepository patientRepository;
+    @Autowired
+    private AppointmentRepository appointmentRepository;
     @Autowired
     private DiseaseRepository diseaseRepository;
     @Autowired
@@ -121,11 +137,12 @@ public class PatientController {
         return p.getPrescriptions();
     }
 
-    @PostMapping("/{id}/appointment")
+    @PostMapping(value = "/{id}/appointment", produces = APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody
     String addAppointment(
             @PathVariable("id") Integer id,
-            @RequestParam LocalDateTime datetime
+            @RequestParam LocalDateTime datetime,
+            @RequestParam String description
     ) {
 
         Patient p = patientRepository.findById(id)
@@ -133,10 +150,58 @@ public class PatientController {
 
         Appointment a = new Appointment();
         a.setDateTime(datetime);
+        a.setDescription(description);
 
-        p.addAppointment(a);
-        patientRepository.save(p);
-        return "{ \"success\": \"true\" }";
+        // Check conflicts
+        AppointmentConflict conflict = overlapsWithExisting(a);
+        if(!conflict.isConflicting) {
+            p.addAppointment(a);
+            patientRepository.save(p);
+            return "{ \"success\": \"true\" }";
+        } else {
+            return conflict.toString();
+        }
+
+    }
+
+    private AppointmentConflict overlapsWithExisting(Appointment appointment) {
+        final LocalDateTime early = appointment.getDateTime();
+        final LocalDateTime late = appointment.getDateTime().plusMinutes(29);
+        AppointmentConflict conflict = new AppointmentConflict();
+
+        for(Appointment existing : appointmentRepository.findAll()) {
+            if(!(early.isAfter(existing.getDateTime().plusMinutes(29)) || late.isBefore(existing.getDateTime()))) {
+                conflict.isConflicting = true;
+                conflict.conflictingPatient = existing.getPatient();
+            }
+        }
+        return conflict;
+    }
+
+    @PostMapping("/check/{type}")
+    public @ResponseBody
+    String checkEmail(@PathVariable("type") String type, @RequestParam String value) {
+
+        boolean checkMethod = false;
+
+        switch (type) {
+            case "email":
+                checkMethod = patientRepository.findByEmail(value).isEmpty();
+                break;
+            case "phoneNumber":
+                checkMethod = patientRepository.findByPhoneNumber(value).isEmpty();
+                break;
+            case "insuranceNumber":
+                checkMethod = patientRepository.findByInsuranceNumber(value).isEmpty();
+                break;
+        }
+
+        if (checkMethod) {
+            return "{ \"valueAllowed\": true }";
+        } else {
+            return "{ \"valueAllowed\": false }";
+        }
+
     }
 
 }

@@ -19,10 +19,14 @@ public class AppointmentController {
 
     @PostMapping(path="")
     public @ResponseBody
-    String addNewAppointment (@RequestParam LocalDateTime datetime) {
+    String addNewAppointment (
+            @RequestParam LocalDateTime datetime,
+            @RequestParam String description
+    ) {
 
         Appointment n = new Appointment();
         n.setDateTime(datetime);
+        n.setDescription(description);
         appointmentRepository.save(n);
         return String.format("{ \"success\": \"true\", \"id\": %s }", n.getId());
     }

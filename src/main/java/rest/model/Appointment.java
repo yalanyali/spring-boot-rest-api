@@ -1,6 +1,7 @@
 package rest.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import rest.serializer.CustomLocalDateTimeSerializer;
 
@@ -25,6 +26,8 @@ public class Appointment {
     @ManyToOne(fetch = FetchType.LAZY) // Eager fetching is bad for performance
     @JoinColumn(name = "patient_id")
     private Patient patient;
+
+    private String description;
 
     // TODO: FOR ALL
     @Override
@@ -60,5 +63,18 @@ public class Appointment {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    @JsonIgnore
+    public Patient getPatient() {
+        return this.patient;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
