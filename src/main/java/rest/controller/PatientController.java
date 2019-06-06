@@ -172,7 +172,7 @@ public class PatientController {
         for(Appointment existing : appointmentRepository.findAll()) {
             if(!(early.isAfter(existing.getDateTime().plusMinutes(29)) || late.isBefore(existing.getDateTime()))) {
                 conflict.isConflicting = true;
-                conflict.conflictingPatient = existing.getPatient();
+                conflict.conflictingPatient = existing.getPatientObj();
             }
         }
         return conflict;

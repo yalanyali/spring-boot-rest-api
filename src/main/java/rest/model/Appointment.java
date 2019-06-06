@@ -65,8 +65,12 @@ public class Appointment {
         this.patient = patient;
     }
 
+    public String getPatient() {
+        return String.format("%s %s", this.patient.getFirstName(), this.patient.getLastName());
+    }
+
     @JsonIgnore
-    public Patient getPatient() {
+    public Patient getPatientObj() {
         return this.patient;
     }
 
