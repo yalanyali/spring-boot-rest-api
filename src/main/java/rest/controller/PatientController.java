@@ -197,9 +197,9 @@ public class PatientController {
         }
 
         if (checkMethod) {
-            return "{ \"valueAllowed\": true }";
+            return "{ \"isUnique\": true }";
         } else {
-            return "{ \"valueAllowed\": false }";
+            return "{ \"isUnique\": false }";
         }
 
     }
