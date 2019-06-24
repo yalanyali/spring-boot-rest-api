@@ -8,6 +8,7 @@ import rest.serializer.CustomLocalDateTimeSerializer;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 @Entity
 public class Appointment {
@@ -65,8 +66,13 @@ public class Appointment {
         this.patient = patient;
     }
 
-    public String getPatient() {
-        return String.format("%s %s", this.patient.getFirstName(), this.patient.getLastName());
+    public HashMap<String, String> getPatient() {
+        HashMap<String, String> p = new HashMap<>();
+        p.put("firstName", this.patient.getFirstName());
+        p.put("lastName", this.patient.getLastName());
+        p.put("id", String.valueOf(patient.getId()));
+        return p;
+        //return String.format("%s %s", this.patient.getFirstName(), this.patient.getLastName());
     }
 
     @JsonIgnore
