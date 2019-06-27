@@ -45,4 +45,15 @@ public class AppointmentController {
         n.getAppointmentRecord().setNotes(notes);
         appointmentRepository.save(n);
     }
+
+    @PostMapping("/{id}")
+    public @ResponseBody
+    void updateAppointment(
+            @RequestParam LocalDateTime datetime,
+            @RequestParam String description
+    ) {
+        Appointment n = appointmentRepository.findById(Integer.parseInt(id))
+                .orElseThrow(() -> new NotFoundException(String.format("Appointment %d not found", id)));
+        
+    }
 }
