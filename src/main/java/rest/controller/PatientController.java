@@ -1,34 +1,23 @@
 package rest.controller;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import rest.exception.NotFoundException;
 import rest.model.*;
-import rest.repository.AppointmentRepository;
-import rest.repository.DiseaseRepository;
-import rest.repository.MedicineRepository;
-import rest.repository.PatientRepository;
+import rest.helper.AppointmentConflictHelper;
+import rest.repository.*;
+import rest.response.SuccessResponse;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
-
-class AppointmentConflict {
-    public boolean isConflicting = false;
-    public Patient conflictingPatient;
-
-    public String toString() {
-        return String.format("{ \"error\": \"CONFLICT\", \"patient\": \"%s %s\"}", conflictingPatient.getFirstName(), conflictingPatient.getLastName());
-    }
-}
 
 @Controller
 @RequestMapping(path="/api/patient")
@@ -38,55 +27,15 @@ public class PatientController {
     @Autowired
     private AppointmentRepository appointmentRepository;
     @Autowired
-    private DiseaseRepository diseaseRepository;
+    private PrescriptionRepository prescriptionRepository;
     @Autowired
     private MedicineRepository medicineRepository;
 
     @PostMapping(path="")
     public @ResponseBody
-    String addNewPatient (
-            @RequestParam String firstName,
-            @RequestParam String lastName,
-            @RequestParam String gender,
-            @RequestParam String email,
-            @RequestParam String phoneNumber,
-            @RequestParam LocalDate dateOfBirth,
-            @RequestParam String insuranceNumber,
-            @RequestParam String state,
-            @RequestParam String city,
-            @RequestParam String street,
-            @RequestParam String buildingNumber,
-            @RequestParam String zip,
-            @RequestParam Set<Integer> diseaseIdList
-            ) {
-        Patient n = new Patient();
-        n.setFirstName(firstName);
-        n.setLastName(lastName);
-        n.setGender(gender);
-        n.setEmail(email);
-        n.setPhoneNumber(phoneNumber);
-        n.setDateOfBirth(dateOfBirth);
-        n.setInsuranceNumber(insuranceNumber);
-
-        Address a = new Address();
-        a.setState(state);
-        a.setCity(city);
-        a.setStreet(street);
-        a.setBuildingNumber(buildingNumber);
-        a.setZip(zip);
-        n.setAddress(a);
-
-        Set<Disease> diseases = new HashSet<>();
-
-        for(Integer diseaseId : diseaseIdList) {
-            Disease d = diseaseRepository.findById(diseaseId)
-                    .orElseThrow(() -> new NotFoundException(String.format("Disease %s not found", diseaseId)));
-            diseases.add(d);
-        }
-
-        n.setDiseases(diseases);
-        patientRepository.save(n);
-        return String.format("{ \"success\": \"true\", \"id\": %s }", n.getId());
+    ResponseEntity<Object> addNewPatient (@Valid @RequestBody Patient patient) {
+        Patient savedPatient = patientRepository.save(patient);
+        return ResponseEntity.ok(new SuccessResponse(savedPatient));
     }
 
     @DeleteMapping("/{id}")
@@ -103,18 +52,49 @@ public class PatientController {
         return patientRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public @ResponseBody
+    Patient getPatient(@PathVariable("id") Integer id) {
+        Patient p = patientRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Patient %d not found", id)));
+        // FIXME: Duplicate patient info
+        return p;
+    }
+
+    @PutMapping("/{id}")
+    public @ResponseBody
+    String updatePatient(@PathVariable("id") Integer id, @Valid @RequestBody Patient patient) {
+        Patient p = patientRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Patient %d not found", id)));
+
+        BeanUtils.copyProperties(patient, p, "id", "appointments", "prescriptions", "diseases");
+
+        patientRepository.save(p);
+        return String.format("{ \"success\": \"true\", \"id\": %d }", id);
+    }
+
     @PostMapping("/{id}/prescription")
     public @ResponseBody
     String addPrescription(
             @PathVariable("id") Integer id,
-            @RequestParam Set<Integer> medicineIdList
+            @Valid @RequestBody Prescription prescription
     ) {
 
         Patient p = patientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Patient %d not found", id)));
 
-        Prescription pr = new Prescription();
-        Set<Medicine> medicine = new HashSet<>();
+        //Prescription savedPrescription = new Prescription();
+        //savedPrescription.setPatient(p);
+        //savedPrescription.setDateTime(prescription.getDateTime());
+
+        // Add medicine by id
+        //for (Medicine m: prescription.getMedicine()) {
+        //    System.out.println(m.getId());
+        //}
+        //savedPrescription.setMedicine();
+        //       prescriptionRepository.save(prescription);
+
+        /*Set<Medicine> medicine = new HashSet<>();
 
         for (Integer medicineId : medicineIdList) {
             Medicine m = medicineRepository.findById(medicineId)
@@ -123,8 +103,8 @@ public class PatientController {
         }
 
         pr.setMedicine(medicine);
-        pr.setDateTime(LocalDateTime.now());
-        p.addPrescription(pr);
+        pr.setDateTime(LocalDateTime.now());*/
+        p.addPrescription(prescription);
         patientRepository.save(p);
         return "{ \"success\": \"true\" }";
     }
@@ -141,21 +121,15 @@ public class PatientController {
     public @ResponseBody
     String addAppointment(
             @PathVariable("id") Integer id,
-            @RequestParam LocalDateTime datetime,
-            @RequestParam String description
+            @Valid @RequestBody Appointment appointment
     ) {
-
         Patient p = patientRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Patient %d not found", id)));
 
-        Appointment a = new Appointment();
-        a.setDateTime(datetime);
-        a.setDescription(description);
-
         // Check conflicts
-        AppointmentConflict conflict = overlapsWithExisting(a);
-        if(!conflict.isConflicting) {
-            p.addAppointment(a);
+        AppointmentConflict conflict = AppointmentConflictHelper.check(appointment, appointmentRepository);
+        if(!conflict.isConflicting()) {
+            p.addAppointment(appointment);
             patientRepository.save(p);
             return "{ \"success\": \"true\" }";
         } else {
@@ -164,39 +138,25 @@ public class PatientController {
 
     }
 
-    private AppointmentConflict overlapsWithExisting(Appointment appointment) {
-        final LocalDateTime early = appointment.getDateTime();
-        final LocalDateTime late = appointment.getDateTime().plusMinutes(29);
-        AppointmentConflict conflict = new AppointmentConflict();
-
-        for(Appointment existing : appointmentRepository.findAll()) {
-            if(!(early.isAfter(existing.getDateTime().plusMinutes(29)) || late.isBefore(existing.getDateTime()))) {
-                conflict.isConflicting = true;
-                conflict.conflictingPatient = existing.getPatientObj();
-            }
-        }
-        return conflict;
-    }
-
-    @PostMapping("/check/{type}")
+    @PostMapping("/check")
     public @ResponseBody
-    String checkEmail(@PathVariable("type") String type, @RequestParam String value) {
+    String checkEmail(@RequestBody UniqueCheckRequest req) {
 
-        boolean checkMethod = false;
+        boolean isUnique = false;
 
-        switch (type) {
+        switch (req.type) {
             case "email":
-                checkMethod = patientRepository.findByEmail(value).isEmpty();
+                isUnique = patientRepository.findByEmail(req.value).isEmpty();
                 break;
             case "phoneNumber":
-                checkMethod = patientRepository.findByPhoneNumber(value).isEmpty();
+                isUnique = patientRepository.findByPhoneNumber(req.value).isEmpty();
                 break;
             case "insuranceNumber":
-                checkMethod = patientRepository.findByInsuranceNumber(value).isEmpty();
+                isUnique = patientRepository.findByInsuranceNumber(req.value).isEmpty();
                 break;
         }
 
-        if (checkMethod) {
+        if (isUnique) {
             return "{ \"isUnique\": true }";
         } else {
             return "{ \"isUnique\": false }";

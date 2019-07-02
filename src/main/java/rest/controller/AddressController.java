@@ -1,42 +1,36 @@
 package rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import rest.exception.NotFoundException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import rest.model.Address;
 import rest.repository.AddressRepository;
+import rest.response.SuccessResponse;
+
+import javax.validation.Valid;
+import java.net.URI;
 
 @Controller
 @RequestMapping(path="/api/address")
 public class AddressController {
     @Autowired
-    private AddressRepository adressRepository;
+    private AddressRepository addressRepository;
 
     @PostMapping(path="")
-    public @ResponseBody
-    String addNewAddress (
-            @RequestParam String state,
-            @RequestParam String city,
-            @RequestParam String street,
-            @RequestParam String buildingNumber,
-            @RequestParam String zip) {
-
-        Address n = new Address();
-        n.setState(state);
-        n.setCity(city);
-        n.setStreet(street);
-        n.setBuildingNumber(buildingNumber);
-        n.setZip(zip);
-        adressRepository.save(n);
-        return String.format("{ \"success\": \"true\", \"id\": %s }", n.getId());
+    public ResponseEntity<Object>
+    addNewAddress (@Valid @RequestBody Address address) {
+        System.out.println("WTF");
+        Address savedAddress = addressRepository.save(address);
+        return ResponseEntity.ok(new SuccessResponse(savedAddress));
     }
 
     @GetMapping(path="")
     public @ResponseBody
     Iterable<Address> getAllAddresses() {
-        return adressRepository.findAll();
+        return addressRepository.findAll();
     }
 
 }

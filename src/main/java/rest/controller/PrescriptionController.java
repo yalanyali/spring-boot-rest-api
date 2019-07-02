@@ -1,6 +1,7 @@
 package rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +10,9 @@ import rest.model.Medicine;
 import rest.model.Prescription;
 import rest.repository.MedicineRepository;
 import rest.repository.PrescriptionRepository;
+import rest.response.SuccessResponse;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 
@@ -23,11 +26,9 @@ public class PrescriptionController {
 
     @PostMapping(path="")
     public @ResponseBody
-    String addNewPrescription (@RequestParam LocalDateTime datetime) {
-        Prescription n = new Prescription();
-        n.setDateTime(datetime);
-        prescriptionRepository.save(n);
-        return String.format("{ \"success\": \"true\", \"id\": %s }", n.getId());
+    ResponseEntity<Object> addNewPrescription (@Valid @RequestBody Prescription prescription) {
+        Prescription savedPrescription = prescriptionRepository.save(prescription);
+        return ResponseEntity.ok(new SuccessResponse(savedPrescription));
     }
 
     @GetMapping(path="")

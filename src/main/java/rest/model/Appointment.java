@@ -1,13 +1,14 @@
 package rest.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import rest.serializer.CustomLocalDateTimeSerializer;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 @Entity
@@ -17,7 +18,9 @@ public class Appointment {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
+    @NotNull
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
+    @JsonFormat(pattern="dd.MM.yyyy HH:mm")
     private LocalDateTime dateTime;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -28,6 +31,7 @@ public class Appointment {
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
+    @NotNull
     private String description;
 
     // TODO: FOR ALL
@@ -50,8 +54,8 @@ public class Appointment {
         return dateTime;
     }
 
-    public void setDateTime(LocalDateTime datetime) {
-        this.dateTime = datetime;
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
     }
 
     public AppointmentRecord getAppointmentRecord() {

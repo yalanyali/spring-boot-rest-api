@@ -1,11 +1,15 @@
 package rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import rest.model.Disease;
 import rest.repository.DiseaseRepository;
+import rest.response.SuccessResponse;
+
+import javax.validation.Valid;
 
 
 @Controller
@@ -16,13 +20,10 @@ public class DiseaseController {
 
     @PostMapping(path="")
     public @ResponseBody
-    String addNewDisease (@RequestParam String name, @RequestParam String description) {
+    ResponseEntity<Object> addNewDisease (@Valid @RequestBody Disease disease) {
 
-        Disease n = new Disease();
-        n.setName(name);
-        n.setDescription(description);
-        diseaseRepository.save(n);
-        return String.format("{ \"success\": \"true\", \"id\": %s }", n.getId());
+        Disease savedDisease = diseaseRepository.save(disease);
+        return ResponseEntity.ok(new SuccessResponse(savedDisease));
     }
 
     @GetMapping(path="")
