@@ -37,6 +37,14 @@ public class PrescriptionController {
         return prescriptionRepository.findAll();
     }
 
+    @DeleteMapping("/{id}")
+    public @ResponseBody
+    String deletePrescription (@PathVariable("id") Integer id) {
+        prescriptionRepository.deleteById(id);
+        //  .orElseThrow(() -> new NotFoundException(String.format("Patient %s not found", id)));
+        return String.format("{ \"success\": \"true\", \"id\": %d }", id);
+    }
+
     @PostMapping("/{id}/medicine")
     public @ResponseBody
     void addMedicine(

@@ -3,19 +3,26 @@ package rest.model;
 // TODO: toString FULL ADDRESS
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Address {
 
-    private String state;
-    private String city;
-    private String street;
-    private String buildingNumber;
-    private String zip;
-
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
+
+    @NotNull
+    private String state;
+    @NotNull
+    private String city;
+    @NotNull
+    private String street;
+    @NotNull
+    private String buildingNumber;
+    @NotNull
+    private String zip;
+
 
     @OneToOne(mappedBy = "address")
     private Patient patient;

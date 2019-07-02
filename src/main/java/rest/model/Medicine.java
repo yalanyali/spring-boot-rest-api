@@ -1,20 +1,25 @@
 package rest.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 public class Medicine {
 
-    @Column(unique=true, length = 30)
-    private String name;
-    private String howOften;
-    private String description;
-
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer id;
+
+    @NotNull
+    @Column(unique=true, length = 30)
+    private String name;
+    // FIXME
+    private String howOften;
+
+    private String description;
+
 
     @ManyToMany(mappedBy = "medicine")
     private Set<Prescription> prescriptionSet = new HashSet<>();

@@ -1,9 +1,11 @@
 package rest.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import rest.serializer.CustomLocalDateSerializer;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,25 +18,33 @@ import java.util.Set;
 @Entity
 public class Patient {
 
-    private String firstName;
-    private String lastName;
-    private String gender;
-
-    @Column(unique=true, length = 60)
-    private String email;
-
-    @Column(unique=true, length = 14)
-    private String phoneNumber;
-
-    @Column(unique=true, length = 10)
-    private String insuranceNumber;
-
-    @JsonSerialize(using = CustomLocalDateSerializer.class)
-    private LocalDate dateOfBirth;
-
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer id;
+
+    @NotNull
+    private String firstName;
+    @NotNull
+    private String lastName;
+    @NotNull
+    private String gender;
+
+    @NotNull
+    @Column(unique=true, length = 60)
+    private String email;
+
+    @NotNull
+    @Column(unique=true, length = 14)
+    private String phoneNumber;
+
+    @NotNull
+    @Column(unique=true, length = 10)
+    private String insuranceNumber;
+
+    @NotNull
+    @JsonSerialize(using = CustomLocalDateSerializer.class)
+    @JsonFormat(pattern="dd.MM.yyyy")
+    private LocalDate dateOfBirth;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "address_id")

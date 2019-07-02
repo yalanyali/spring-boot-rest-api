@@ -1,11 +1,13 @@
 package rest.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import rest.serializer.CustomLocalDateTimeSerializer;
 
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 import java.util.HashSet;
@@ -17,9 +19,12 @@ public class Prescription {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer id;
 
+    @NotNull
     @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
+    @JsonFormat(pattern="dd.MM.yyyy HH:mm")
     private LocalDateTime dateTime;
 
+    @NotNull
     @ManyToMany(cascade = {
         CascadeType.PERSIST,
         CascadeType.MERGE
