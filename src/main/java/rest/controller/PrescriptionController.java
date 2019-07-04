@@ -1,5 +1,6 @@
 package rest.controller;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -45,18 +46,34 @@ public class PrescriptionController {
         return String.format("{ \"success\": \"true\", \"id\": %d }", id);
     }
 
+    @PutMapping(path="/{id}")
+    public @ResponseBody
+    ResponseEntity<Object> updatePrescription (
+            @PathVariable("id") Integer id,
+            @Valid @RequestBody Prescription prescription
+        ) {
+
+        Prescription p = prescriptionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Prescription %d not found", id)));
+
+        p.setMedicine(prescription.getMedicine());
+
+        Prescription savedPrescription = prescriptionRepository.save(prescription);
+        return ResponseEntity.ok(new SuccessResponse(savedPrescription));
+    }
+
     @PostMapping("/{id}/medicine")
     public @ResponseBody
     void addMedicine(
-            @PathVariable("id") String id,
-            @RequestParam String medicineId
+            @PathVariable("id") Integer id,
+            @RequestParam Integer medicineId
             ) {
 
-        Prescription p = prescriptionRepository.findById(Integer.parseInt(id))
-                .orElseThrow(() -> new NotFoundException(String.format("Prescription %s not found", id)));
+        Prescription p = prescriptionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Prescription %d not found", id)));
 
-        Medicine m = medicineRepository.findById(Integer.parseInt(medicineId))
-                .orElseThrow(() -> new NotFoundException(String.format("Medicine %s not found", medicineId)));
+        Medicine m = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new NotFoundException(String.format("Medicine %d not found", medicineId)));
 
         p.getMedicine().add(m);
         prescriptionRepository.save(p);

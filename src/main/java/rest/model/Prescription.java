@@ -10,6 +10,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -73,5 +74,13 @@ public class Prescription {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    public HashMap<String, String> getPatient() {
+        HashMap<String, String> p = new HashMap<>();
+        p.put("firstName", this.patient.getFirstName());
+        p.put("lastName", this.patient.getLastName());
+        p.put("id", String.valueOf(patient.getId()));
+        return p;
     }
 }
