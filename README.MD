@@ -9,14 +9,10 @@ MYSQL is the database of choice. In order to test the project, please **create a
 
 >mysql> create database db_rest;
 
->mysql> create user 'springuser'@'%' identified by 'password'
+>mysql> create user 'springuser'@'%' identified by 'password';
 
->mysql> grant all on db_example.* to 'springuser'@'%';
+>mysql> grant all on db_rest.* to 'springuser'@'%';
 
 Or change the default database and credential settings in **application.properties** file.
 
 Remember to change **spring.jpa.hibernate.ddl-auto** variable to create or update accordingly.
-
-## Endpoints
-
-TODO.
