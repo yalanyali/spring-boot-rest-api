@@ -1,28 +1,30 @@
 package rest.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.*;
 
 @Entity
 public class User {
 
-    @Column(unique=true, length = 30)
-    private String username;
-    private String firstName;
-    private String lastName;
-    @Column(unique=true, length = 60)
-    private String email;
-    private String password;
-
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
+
+    @Column(unique=true, length = 30)
+    private String username;
+
+    @Column(unique=true, length = 60)
+    private String email;
+
+    private String firstName;
+    private String lastName;
+    private String password;
+
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getUsername() {

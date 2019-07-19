@@ -1,9 +1,12 @@
 package rest.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.swagger.annotations.ApiModelProperty;
 import rest.serializer.CustomLocalDateSerializer;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,25 +19,34 @@ import java.util.Set;
 @Entity
 public class Patient {
 
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
+    private Integer id;
+
+    @NotNull
     private String firstName;
+    @NotNull
     private String lastName;
+    @NotNull
     private String gender;
 
+    @NotNull
     @Column(unique=true, length = 60)
     private String email;
 
+    @NotNull
     @Column(unique=true, length = 14)
     private String phoneNumber;
 
+    @NotNull
     @Column(unique=true, length = 10)
     private String insuranceNumber;
 
+    @NotNull
     @JsonSerialize(using = CustomLocalDateSerializer.class)
+    @JsonFormat(pattern="dd.MM.yyyy")
     private LocalDate dateOfBirth;
-
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    private Integer id;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "address_id")
@@ -53,17 +65,6 @@ public class Patient {
         orphanRemoval = true
     )
     private List<Prescription> prescriptions = new ArrayList<>();
-
-    @ManyToMany(cascade = {
-        CascadeType.PERSIST,
-        CascadeType.MERGE
-    })
-    @JoinTable(
-        name = "patient_disease",
-        joinColumns = @JoinColumn(name = "patient_id"),
-        inverseJoinColumns = @JoinColumn(name = "disease_id")
-    )
-    private Set<Disease> diseases = new HashSet<>();
 
     public void addAppointment(Appointment appointment) {
         appointments.add(appointment);
@@ -86,8 +87,6 @@ public class Patient {
     }
 
     public Integer getId() { return id; }
-
-    public void setId(Integer id) { this.id = id; }
 
     public String getFirstName() {
         return firstName;
@@ -161,11 +160,4 @@ public class Patient {
         return appointments;
     }
 
-    public Set<Disease> getDiseases() {
-        return diseases;
-    }
-
-    public void setDiseases(Set<Disease> diseases) {
-        this.diseases = diseases;
-    }
 }

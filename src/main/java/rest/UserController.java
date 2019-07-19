@@ -1,11 +1,14 @@
 package rest;
 
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import rest.model.User;
 import rest.repository.UserRepository;
+
+import java.util.ArrayList;
 
 // FOR TEST PURPOSES
 
@@ -34,8 +37,9 @@ public class UserController {
     }
 
     @GetMapping(path="")
-    public @ResponseBody Iterable<User> getAllUsers() {
-        return userRepository.findAll();
+    public @ResponseBody
+    ArrayList<User> getAllUsers() {
+        return Lists.newArrayList(userRepository.findAll());
     }
 
 }
