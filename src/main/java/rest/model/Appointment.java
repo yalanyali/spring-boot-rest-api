@@ -4,6 +4,7 @@ package rest.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.swagger.annotations.ApiModelProperty;
 import rest.serializer.CustomLocalDateTimeSerializer;
 
 import javax.persistence.*;
@@ -16,6 +17,7 @@ public class Appointment {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
 
     @NotNull
@@ -25,10 +27,13 @@ public class Appointment {
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "appointment_record_id")
+    @ApiModelProperty(hidden=true)
     private AppointmentRecord appointmentRecord = new AppointmentRecord();
 
+    //@JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY) // Eager fetching is bad for performance
     @JoinColumn(name = "patient_id")
+    @ApiModelProperty(hidden=true)
     private Patient patient;
 
     @NotNull
@@ -44,10 +49,6 @@ public class Appointment {
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public LocalDateTime getDateTime() {

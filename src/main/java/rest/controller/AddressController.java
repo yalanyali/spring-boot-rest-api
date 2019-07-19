@@ -1,36 +1,40 @@
 package rest.controller;
 
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import rest.model.Address;
 import rest.repository.AddressRepository;
-import rest.response.SuccessResponse;
+import rest.response.SuccessResponseWithData;
 
 import javax.validation.Valid;
-import java.net.URI;
+
+import java.util.ArrayList;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 @Controller
-@RequestMapping(path="/api/address")
+@RequestMapping(path="/api/address", produces = APPLICATION_JSON_UTF8_VALUE)
 public class AddressController {
     @Autowired
     private AddressRepository addressRepository;
 
     @PostMapping(path="")
-    public ResponseEntity<Object>
+    @ResponseStatus(HttpStatus.CREATED)
+    public SuccessResponseWithData
     addNewAddress (@Valid @RequestBody Address address) {
-        System.out.println("WTF");
         Address savedAddress = addressRepository.save(address);
-        return ResponseEntity.ok(new SuccessResponse(savedAddress));
+        return new SuccessResponseWithData(savedAddress);
     }
 
     @GetMapping(path="")
     public @ResponseBody
-    Iterable<Address> getAllAddresses() {
-        return addressRepository.findAll();
+    ArrayList<Address> getAllAddresses() {
+        return Lists.newArrayList(addressRepository.findAll());
     }
 
 }

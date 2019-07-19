@@ -2,6 +2,7 @@ package rest.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.swagger.annotations.ApiModelProperty;
 import rest.serializer.CustomLocalDateSerializer;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class Patient {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
 
     @NotNull
@@ -64,17 +66,6 @@ public class Patient {
     )
     private List<Prescription> prescriptions = new ArrayList<>();
 
-    @ManyToMany(cascade = {
-        CascadeType.PERSIST,
-        CascadeType.MERGE
-    })
-    @JoinTable(
-        name = "patient_disease",
-        joinColumns = @JoinColumn(name = "patient_id"),
-        inverseJoinColumns = @JoinColumn(name = "disease_id")
-    )
-    private Set<Disease> diseases = new HashSet<>();
-
     public void addAppointment(Appointment appointment) {
         appointments.add(appointment);
         appointment.setPatient(this);
@@ -96,8 +87,6 @@ public class Patient {
     }
 
     public Integer getId() { return id; }
-
-    public void setId(Integer id) { this.id = id; }
 
     public String getFirstName() {
         return firstName;
@@ -171,11 +160,4 @@ public class Patient {
         return appointments;
     }
 
-    public Set<Disease> getDiseases() {
-        return diseases;
-    }
-
-    public void setDiseases(Set<Disease> diseases) {
-        this.diseases = diseases;
-    }
 }

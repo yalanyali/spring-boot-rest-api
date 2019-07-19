@@ -3,6 +3,7 @@ package rest.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.annotation.LastModifiedDate;
 import rest.serializer.CustomLocalDateTimeSerializer;
 
@@ -15,6 +16,7 @@ public class AppointmentRecord {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
 
     private String notes;
@@ -28,10 +30,6 @@ public class AppointmentRecord {
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getNotes() {

@@ -2,6 +2,9 @@ package rest.model;
 
 // TODO: toString FULL ADDRESS
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
@@ -10,6 +13,7 @@ public class Address {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
 
     @NotNull
@@ -23,16 +27,12 @@ public class Address {
     @NotNull
     private String zip;
 
-
+    @JsonIgnore
     @OneToOne(mappedBy = "address")
     private Patient patient;
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getState() {

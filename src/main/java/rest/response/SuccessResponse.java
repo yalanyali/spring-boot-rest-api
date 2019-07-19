@@ -1,13 +1,9 @@
 package rest.response;
 
-import java.util.Date;
-
 public class SuccessResponse {
-    private Object data;
 
-    public SuccessResponse(Object data) {
+    public SuccessResponse() {
         super();
-        this.data = data;
     }
 
     public String getMessage() {
@@ -15,7 +11,4 @@ public class SuccessResponse {
         return message;
     }
 
-    public Object getData() {
-        return data;
-    }
 }

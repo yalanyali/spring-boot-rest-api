@@ -2,7 +2,9 @@ package rest.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.swagger.annotations.ApiModelProperty;
 import rest.serializer.CustomLocalDateTimeSerializer;
 
 
@@ -18,6 +20,7 @@ import java.util.Set;
 public class Prescription {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
 
     @NotNull
@@ -37,6 +40,7 @@ public class Prescription {
     )
     private Set<Medicine> medicine = new HashSet<>();
 
+    //@JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY) // Eager fetching is bad for performance
     @JoinColumn(name = "patient_id")
     private Patient patient;
@@ -50,10 +54,6 @@ public class Prescription {
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public LocalDateTime getDateTime() {

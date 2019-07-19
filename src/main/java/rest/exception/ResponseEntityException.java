@@ -30,6 +30,7 @@ public class ResponseEntityException extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
+    // General exception handler
     /*@ExceptionHandler(Exception.class)
     public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
         List<String> details = new ArrayList<>();

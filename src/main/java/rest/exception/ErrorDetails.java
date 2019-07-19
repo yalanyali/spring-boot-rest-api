@@ -1,5 +1,6 @@
 package rest.exception;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +12,13 @@ public class ErrorDetails {
     public ErrorDetails(Date timestamp, String message, List<String> details) {
         super();
         this.timestamp = timestamp;
+        this.message = message;
+        this.details = details;
+    }
+
+    public ErrorDetails(String message, List<String> details) {
+        super();
+        this.timestamp = new Timestamp(System.currentTimeMillis());
         this.message = message;
         this.details = details;
     }

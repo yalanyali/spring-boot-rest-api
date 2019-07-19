@@ -1,6 +1,10 @@
 package rest.controller;
 
+import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -10,42 +14,45 @@ import rest.helper.AppointmentConflictHelper;
 import rest.model.Appointment;
 import rest.model.AppointmentConflict;
 import rest.model.AppointmentRecord;
-import rest.model.Patient;
 import rest.repository.AppointmentRepository;
-import rest.response.SuccessResponse;
+import rest.response.SuccessResponseWithData;
+import rest.response.SuccessResponseWithId;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 
 @Controller
-@RequestMapping(path="/api/appointment")
+@RequestMapping(path="/api/appointment", produces = APPLICATION_JSON_UTF8_VALUE)
 public class AppointmentController {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
     @PostMapping(path="")
+    @ResponseStatus(HttpStatus.CREATED)
     public @ResponseBody
-    ResponseEntity<Object> addNewAppointment (@Valid @RequestBody Appointment appointment) {
+    SuccessResponseWithData addNewAppointment (@Valid @RequestBody Appointment appointment) {
         Appointment savedAppointment = appointmentRepository.save(appointment);
-        return ResponseEntity.ok(new SuccessResponse(savedAppointment));
+        return new SuccessResponseWithData(savedAppointment);
     }
 
+    @ApiResponses(value={@ApiResponse(code = 404, message = "Appointment not found")})
     @DeleteMapping("/{id}")
     public @ResponseBody
-    String deleteAppointment (@PathVariable("id") Integer id) {
+    SuccessResponseWithId deleteAppointment (@PathVariable("id") Integer id) {
+        appointmentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Appointment %s not found", id)));
         appointmentRepository.deleteById(id);
-        //  .orElseThrow(() -> new NotFoundException(String.format("Appointment %s not found", id)));
-        return String.format("{ \"success\": \"true\", \"id\": %d }", id);
+        return new SuccessResponseWithId(id);
     }
 
-
-    // FIXME: JSON OUTPUT FOR ALL
-    @PutMapping(value = "/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @ApiResponses(value={@ApiResponse(code = 404, message = "Appointment not found")})
+    @PutMapping(value = "/{id}")
     public @ResponseBody
-    String updateAppointment(
+    Object updateAppointment(
             @PathVariable("id") Integer id,
             @Valid @RequestBody Appointment appointment
     ) {
@@ -55,42 +62,34 @@ public class AppointmentController {
 
         // Check conflicts
         AppointmentConflict conflict = AppointmentConflictHelper.check(appointment, appointmentRepository);
-        // Ignore conflict if the conflicting appointment is the one being updated
-        if(!conflict.isConflicting() || conflict.getConflictingId() == id) {
+        // Ignore the conflict if conflicting appointment is the one being updated
+        if(!conflict.isConflicting() || conflict.getConflictingId().equals(id)) {
             a.setDescription(appointment.getDescription());
             a.setDateTime(appointment.getDateTime());
             appointmentRepository.save(a);
-            return String.format("{ \"success\": \"true\", \"id\": %d }", id);
+            return new SuccessResponseWithId(id);
         } else {
-            return conflict.toString();
+            return conflict.toError();
         }
     }
 
     @GetMapping(path="")
     public @ResponseBody
-    Iterable<Appointment> getAllAppointments() {
-        return appointmentRepository.findAll();
+    ArrayList<Appointment> getAllAppointments() {
+        return Lists.newArrayList(appointmentRepository.findAll());
     }
 
+    // FIXME: Return id of AppointmentRecord
+    @ApiResponses(value={@ApiResponse(code = 404, message = "Appointment not found")})
     @PostMapping("/{id}/notes")
     public @ResponseBody
-    String addNotes(@PathVariable("id") Integer id, @Valid @RequestBody AppointmentRecord appointmentRecord) {
+    SuccessResponseWithId addNotes(@PathVariable("id") Integer id, @Valid @RequestBody AppointmentRecord appointmentRecord) {
         Appointment n = appointmentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Appointment %d not found", id)));
         appointmentRecord.setDateAdded(LocalDateTime.now());
         n.setAppointmentRecord(appointmentRecord);
         appointmentRepository.save(n);
-        return "{ \"success\": \"true\" }";
+        return new SuccessResponseWithId(id);
     }
 
-    /*@PostMapping("/{id}")
-    public @ResponseBody
-    void updateAppointment(
-            @RequestParam LocalDateTime datetime,
-            @RequestParam String description
-    ) {
-        Appointment n = appointmentRepository.findById(Integer.parseInt(id))
-                .orElseThrow(() -> new NotFoundException(String.format("Appointment %d not found", id)));
-
-    }*/
 }

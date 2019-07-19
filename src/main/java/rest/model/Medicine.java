@@ -1,5 +1,7 @@
 package rest.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -10,13 +12,12 @@ public class Medicine {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
+    @ApiModelProperty(hidden=true)
     private Integer id;
 
     @NotNull
     @Column(unique=true, length = 30)
     private String name;
-    // FIXME
-    private String howOften;
 
     private String description;
 
@@ -28,24 +29,12 @@ public class Medicine {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getHowOften() {
-        return howOften;
-    }
-
-    public void setHowOften(String howOften) {
-        this.howOften = howOften;
     }
 
     public String getDescription() {

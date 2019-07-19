@@ -1,7 +1,10 @@
 package rest.controller;
 
-import org.springframework.beans.BeanUtils;
+import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -11,14 +14,18 @@ import rest.model.Medicine;
 import rest.model.Prescription;
 import rest.repository.MedicineRepository;
 import rest.repository.PrescriptionRepository;
-import rest.response.SuccessResponse;
+import rest.response.SuccessResponseWithData;
+import rest.response.SuccessResponseWithId;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
+
+import java.util.ArrayList;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 
 @Controller
-@RequestMapping(path="/api/prescription")
+@RequestMapping(path="/api/prescription", produces = APPLICATION_JSON_UTF8_VALUE)
 public class PrescriptionController {
     @Autowired
     private PrescriptionRepository prescriptionRepository;
@@ -27,28 +34,31 @@ public class PrescriptionController {
 
     @PostMapping(path="")
     public @ResponseBody
-    ResponseEntity<Object> addNewPrescription (@Valid @RequestBody Prescription prescription) {
+    SuccessResponseWithData addNewPrescription (@Valid @RequestBody Prescription prescription) {
         Prescription savedPrescription = prescriptionRepository.save(prescription);
-        return ResponseEntity.ok(new SuccessResponse(savedPrescription));
+        return new SuccessResponseWithData(savedPrescription);
     }
 
     @GetMapping(path="")
     public @ResponseBody
-    Iterable<Prescription> getAllPrescriptions() {
-        return prescriptionRepository.findAll();
+    ArrayList<Prescription> getAllPrescriptions() {
+        return Lists.newArrayList(prescriptionRepository.findAll());
     }
 
+    @ApiResponses(value={@ApiResponse(code = 404, message = "Prescription not found")})
     @DeleteMapping("/{id}")
     public @ResponseBody
-    String deletePrescription (@PathVariable("id") Integer id) {
+    SuccessResponseWithId deletePrescription (@PathVariable("id") Integer id) {
+        prescriptionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("Prescription %s not found", id)));
         prescriptionRepository.deleteById(id);
-        //  .orElseThrow(() -> new NotFoundException(String.format("Patient %s not found", id)));
-        return String.format("{ \"success\": \"true\", \"id\": %d }", id);
+        return new SuccessResponseWithId(id);
     }
 
+    @ApiResponses(value={@ApiResponse(code = 404, message = "Prescription not found")})
     @PutMapping(path="/{id}")
     public @ResponseBody
-    ResponseEntity<Object> updatePrescription (
+    SuccessResponseWithData updatePrescription (
             @PathVariable("id") Integer id,
             @Valid @RequestBody Prescription prescription
         ) {
@@ -58,13 +68,15 @@ public class PrescriptionController {
 
         p.setMedicine(prescription.getMedicine());
 
-        Prescription savedPrescription = prescriptionRepository.save(prescription);
-        return ResponseEntity.ok(new SuccessResponse(savedPrescription));
+        Prescription savedPrescription = prescriptionRepository.save(p);
+        return new SuccessResponseWithData(savedPrescription);
     }
 
+    @ApiResponses(value={@ApiResponse(code = 404, message = "Prescription/Medicine not found")})
     @PostMapping("/{id}/medicine")
+    @ResponseStatus(HttpStatus.CREATED)
     public @ResponseBody
-    void addMedicine(
+    SuccessResponseWithId addMedicine(
             @PathVariable("id") Integer id,
             @RequestParam Integer medicineId
             ) {
@@ -77,6 +89,9 @@ public class PrescriptionController {
 
         p.getMedicine().add(m);
         prescriptionRepository.save(p);
+
+        // FIXME: Return medicine id
+        return new SuccessResponseWithId(id);
     }
 
 }
