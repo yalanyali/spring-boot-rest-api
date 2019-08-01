@@ -16,3 +16,16 @@ MYSQL is the database of choice. In order to test the project, please **create a
 Or change the default database and credential settings in **application.properties** file.
 
 Remember to change **spring.jpa.hibernate.ddl-auto** variable to create or update accordingly.
+
+## Documentation
+
+The [documentation](https://termin-api.docs.stoplight.io/) allows you to see and test the endpoints.
+
+## Test Server
+
+A [test server](http://termin-api.chickenkiller.com:8080/api) is provided with the [documentation](https://termin-api.docs.stoplight.io/).
+
+
+**Note on test server:**
+Test server is implemented to be reset in half hour intervals for security purposes.
+Don't panic if you experience data loss, you will and that's intended.
