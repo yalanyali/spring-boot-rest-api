@@ -29,5 +29,5 @@ Username: `testuser`
 Password: `testpassword`
 
 **Note on test server:**
-Test server is implemented to be reset in half hour intervals for security purposes.
+Test server is implemented to be reset in half hour intervals for security purposes.  
 Don't panic if you experience data loss, you will and that's intended.
