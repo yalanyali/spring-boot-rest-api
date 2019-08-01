@@ -25,7 +25,7 @@ The [documentation](https://termin-api.docs.stoplight.io/) allows you to see and
 
 A [test server](http://termin-api.chickenkiller.com:8080/api) is provided with the [documentation](https://termin-api.docs.stoplight.io/).
 
-Username: `testuser`
+Username: `testuser`  
 Password: `testpassword`
 
 **Note on test server:**
