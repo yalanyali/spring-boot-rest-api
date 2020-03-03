@@ -1,3 +1,7 @@
+For archive purposes. Old project.
+
+
+
 # Spring Boot REST API Project
 
 A REST API to be used as a backend for an appointment management app in a doctor's office.
